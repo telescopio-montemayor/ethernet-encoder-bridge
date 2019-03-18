@@ -165,6 +165,9 @@ async def run(args):
     store_server = ScopeStoreServer(args.host, args.web_port, store)
     await store_server.start()
 
+    wsupdater = WSUpdater(args.encoder_server, store, args.ra_axis_id, args.dec_axis_id)
+    await(wsupdater.start())
+
     logger.info('LX200 <-> Ethernet Encoder Bridge')
     logger.info('Serving on {}'.format(server.sockets[0].getsockname()))
     logger.info('Serving state on http://{}:{}'.format(args.host, args.web_port))
