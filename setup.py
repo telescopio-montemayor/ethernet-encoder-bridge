@@ -17,6 +17,7 @@ setup(
     install_requires=[
         'attrs',
         'aiohttp',
+        'requests',
         'pyyaml',
         'munch',
     ],
@@ -30,6 +31,11 @@ setup(
     url='https://github.com/telescopio-montemayor/lx200-encoder-bridge',
     author='Adrián Pardini',
     author_email='github@tangopardo.com.ar',
+    entry_points={
+        'console_scripts': [
+            'lx200-bridge=lx200_encoder_bridge:main'
+        ]
+    },
     classifiers=[
         'Environment :: Web Environment',
         'Development Status :: 2 - Pre-Alpha',
