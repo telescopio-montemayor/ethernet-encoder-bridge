@@ -86,28 +86,43 @@ def build_lx200_protocol_factory(store, server, ra_id, dec_id, *args, **kwargs):
     return __inner
 
 
+
+class ScopeStoreServer:
+
+    def __init__(self, host, port, store):
+        self.host = host
+        self.port = port
+        self.store = store
+
+        routes = web.RouteTableDef()
+
+        @routes.get('/')
+        async def json_store_status(request):
+            return web.json_response(request.app['scope_store'])
+
+        app = self.app = web.Application()
+        app['scope_store'] = store
+
+        app.add_routes(routes)
+        self.runner = web.AppRunner(app)
+
+    async def start(self):
+
+        await self.runner.setup()
+
+        site = self.site = web.TCPSite(self.runner, self.host, self.port)
+
+        await self.site.start()
+
+
 async def run(args):
 
     loop = asyncio.get_running_loop()
     lx200_factory = build_lx200_protocol_factory(store, args.encoder_server, args.ra_axis_id, args.dec_axis_id)
 
     server = await loop.create_server(lx200_factory, args.host, args.port)
-
-    routes = web.RouteTableDef()
-
-    @routes.get('/')
-    async def json_store_status(request):
-        return web.json_response(request.app['scope_store'])
-
-    app = web.Application()
-    app['scope_store'] = store
-
-    app.add_routes(routes)
-
-    runner = web.AppRunner(app)
-    await runner.setup()
-    site = web.TCPSite(runner, args.host, args.web_port)
-    await site.start()
+    store_server = ScopeStoreServer(args.host, args.web_port, store)
+    await store_server.start()
 
     logger.info('LX200 <-> Ethernet Encoder Bridge')
     logger.info('Serving on {}'.format(server.sockets[0].getsockname()))
