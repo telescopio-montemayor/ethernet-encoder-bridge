@@ -1,0 +1,3 @@
+recursive-include lx200_encoder_bridge *
+include README.md
+include LICENSE.txt
