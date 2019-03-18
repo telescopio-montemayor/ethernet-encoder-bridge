@@ -6,6 +6,8 @@ import logging
 import asyncio
 from aiohttp import web
 import requests
+import socketio
+from socketio.exceptions import ConnectionError
 
 import lx200.parser
 import lx200.commands
@@ -113,6 +115,45 @@ class ScopeStoreServer:
         site = self.site = web.TCPSite(self.runner, self.host, self.port)
 
         await self.site.start()
+
+
+class WSUpdater:
+    def __init__(self, encoder_server_path, store, ra_axis_id, dec_axis_id):
+        self.server_path = encoder_server_path
+        self.store = store
+        self.ra_axis_id = ra_axis_id
+        self.dec_axis_id = dec_axis_id
+
+        sio = self.sio = socketio.AsyncClient()
+
+        @sio.on('position')
+        async def update_position(payload):
+            parameter_map = {
+                self.ra_axis_id: [
+                    ('position_astronomical', 'mount.right_ascencion'),
+                    ('target_astronomical', 'mount.target.right_ascencion'),
+                ],
+                self.dec_axis_id: [
+                    ('position_angle', 'mount.declination'),
+                    ('target_angle', 'mount.target.declination'),
+                ]
+            }
+
+            for src, dest in parameter_map[payload['id']]:
+                self.store[dest].update(payload[src])
+
+    async def start(self):
+        async def __connect():
+            while True:
+                try:
+                    await self.sio.connect(self.server_path)
+                except (ConnectionError, ValueError):
+                    pass
+                else:
+                    break
+
+            await asyncio.sleep(1)
+        return asyncio.create_task(__connect())
 
 
 async def run(args):

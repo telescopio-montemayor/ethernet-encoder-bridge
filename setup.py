@@ -20,6 +20,7 @@ setup(
         'requests',
         'pyyaml',
         'munch',
+        'python-socketio[asyncio_client]'
     ],
     dependency_links=[
         'git+https://github.com/telescopio-montemayor/python-lx200'
