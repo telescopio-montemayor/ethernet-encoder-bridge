@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import atexit
 import logging
 
 import asyncio
@@ -8,6 +9,9 @@ from aiohttp import web
 import requests
 import socketio
 from socketio.exceptions import ConnectionError
+
+import json
+import yaml
 
 import lx200.parser
 import lx200.commands
@@ -173,6 +177,32 @@ async def run(args):
     logger.info('Serving state on http://{}:{}'.format(args.host, args.web_port))
 
 
+def save_store(store, store_path, format='json'):
+    if format == 'json':
+        serialized = store.toJSON()
+    else:
+        serialized = store.toYAML()
+
+    with open(store_path, 'w', encoding='utf-8') as f:
+        f.write(serialized)
+
+
+def load_store(store, store_path, format='json'):
+    contents = ''
+    try:
+        with open(store_path, 'r') as f:
+            contents = f.read()
+    except FileNotFoundError:
+        return
+
+    try:
+        data = json.loads(contents)
+        store.update(data)
+    except json.decoder.JSONDecodeError:
+        data = yaml.load(contents)
+        store.update(data)
+
+
 def main():
     parser = argparse.ArgumentParser(description='Bridge between ethernet-encoder-servo and LX200 protocol')
 
@@ -184,6 +214,9 @@ def main():
     parser.add_argument('--web-port', type=int, required=False, default=8081)
     parser.add_argument('--host', type=str, required=False, default='127.0.0.1')
 
+    parser.add_argument('--store-path', type=str, required=False, default='', help='Path to load and save scope status store')
+    parser.add_argument('--store-format', required=False, default='json',  choices=['json', 'yaml'], help='Output format for store, default: JSON')
+
     parser.add_argument('--verbose', required=False, default=False, action='store_true')
 
     args = parser.parse_args()
@@ -193,6 +226,10 @@ def main():
 
     if args.verbose:
         logger.setLevel(logging.DEBUG)
+
+    atexit.register(save_store, store, args.store_path, args.store_format)
+
+    load_store(store, args.store_path, args.store_format)
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(run(args))
