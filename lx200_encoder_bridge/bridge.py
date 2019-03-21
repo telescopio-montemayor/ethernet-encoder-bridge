@@ -39,6 +39,11 @@ class LX200Protocol(asyncio.Protocol):
             lx200.commands.SlewToTarget: self.do_goto,
             lx200.commands.SlewToTargetObject: self.do_goto,
             lx200.commands.SyncDatabase: self.do_sync,
+            lx200.commands.HaltAll: self.halt,
+            lx200.commands.HaltEastward: self.halt,
+            lx200.commands.HaltWestward: self.halt,
+            lx200.commands.HaltNorthwawrd: self.halt,
+            lx200.commands.HaltSouthward: self.halt,
         }
 
     def connection_made(self, transport):
@@ -83,6 +88,13 @@ class LX200Protocol(asyncio.Protocol):
         if 'mount.target.declination' in self.store:
             payload = self.store['mount.target.declination']
             requests.put('{}/api/devices/{}/{}/angle'.format(self.server_path, self.dec_id, action), json=payload)
+
+    def halt(self, *args, **kwargs):
+        if 'mount.target.right_ascencion' in self.store:
+            requests.put('{}/api/devices/{}/halt'.format(self.server_path, self.ra_id))
+
+        if 'mount.target.declination' in self.store:
+            requests.put('{}/api/devices/{}/halt'.format(self.server_path, self.dec_id))
 
 
 
