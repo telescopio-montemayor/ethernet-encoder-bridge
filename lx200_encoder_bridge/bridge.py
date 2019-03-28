@@ -207,7 +207,8 @@ class WSUpdater:
                 else:
                     break
 
-            await asyncio.sleep(1)
+                await asyncio.sleep(1)
+
         return asyncio.create_task(__connect())
 
 
