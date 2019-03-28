@@ -34,7 +34,7 @@ setup(
     author_email='github@tangopardo.com.ar',
     entry_points={
         'console_scripts': [
-            'lx200-bridge=lx200_encoder_bridge:main'
+            'lx200-bridge=lx200_encoder_bridge.bridge:main'
         ]
     },
     classifiers=[
