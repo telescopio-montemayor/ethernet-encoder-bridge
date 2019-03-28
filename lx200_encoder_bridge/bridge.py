@@ -176,6 +176,11 @@ class WSUpdater:
 
         sio = self.sio = socketio.AsyncClient()
 
+        @sio.on('disconnect')
+        async def onerror(payload=None):
+            await asyncio.sleep(1)
+            await self.start()
+
         @sio.on('position')
         async def update_position(payload):
             parameter_map = {
