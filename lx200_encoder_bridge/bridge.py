@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import sys
+
 import argparse
 import signal
 import atexit
@@ -290,6 +292,10 @@ def main():
     if args.store_path:
         atexit.register(save_store, store, args.store_path, args.store_format)
         loop.add_signal_handler(signal.SIGHUP, functools.partial(save_store, store, args.store_path, args.store_format))
+
+        loop.add_signal_handler(signal.SIGTERM, functools.partial(sys.exit, 0))
+        loop.add_signal_handler(signal.SIGINT, functools.partial(sys.exit, 0))
+        loop.add_signal_handler(signal.SIGQUIT, functools.partial(sys.exit, 0))
 
     load_store(store, args.store_path, args.store_format)
 
