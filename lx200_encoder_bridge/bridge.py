@@ -284,7 +284,8 @@ def main():
     if args.verbose:
         logger.setLevel(logging.DEBUG)
 
-    atexit.register(save_store, store, args.store_path, args.store_format)
+    if args.store_path:
+        atexit.register(save_store, store, args.store_path, args.store_format)
 
     load_store(store, args.store_path, args.store_format)
 
