@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import signal
 import atexit
 import logging
 
@@ -284,11 +285,13 @@ def main():
     if args.verbose:
         logger.setLevel(logging.DEBUG)
 
+    loop = asyncio.get_event_loop()
+
     if args.store_path:
         atexit.register(save_store, store, args.store_path, args.store_format)
+        loop.add_signal_handler(signal.SIGHUP, functools.partial(save_store, store, args.store_path, args.store_format))
 
     load_store(store, args.store_path, args.store_format)
 
-    loop = asyncio.get_event_loop()
     loop.run_until_complete(run(args))
     loop.run_forever()
