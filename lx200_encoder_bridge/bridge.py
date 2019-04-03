@@ -45,12 +45,11 @@ class LX200Protocol(asyncio.Protocol):
             lx200.commands.SlewToTargetObject: self.do_goto,
             lx200.commands.SyncDatabase: self.do_sync,
             lx200.commands.HaltAll: self.halt,
-            lx200.commands.HaltEastward: functools.partial(self.halt_axis, axis_id=self.ra_id),
-            lx200.commands.HaltWestward: functools.partial(self.halt_axis, axis_id=self.ra_id),
-            lx200.commands.HaltNorthwawrd: functools.partial(self.halt_axis, axis_id=self.dec_id),
-            lx200.commands.HaltSouthward: functools.partial(self.halt_axis, axis_id=self.dec_id),
+            lx200.commands.HaltEastward: functools.partial(self.halt_axis_slew, axis_id=self.ra_id),
+            lx200.commands.HaltWestward: functools.partial(self.halt_axis_slew, axis_id=self.ra_id),
+            lx200.commands.HaltNorthwawrd: functools.partial(self.halt_axis_slew, axis_id=self.dec_id),
+            lx200.commands.HaltSouthward: functools.partial(self.halt_axis_slew, axis_id=self.dec_id),
 
-            # XXX FIXME: need to implement continuous movement instead of a simple relative slew
             lx200.commands.MoveEast: functools.partial(self.slew_axis_relative, axis_id=self.ra_id, direction=1),
             lx200.commands.MoveWest: functools.partial(self.slew_axis_relative, axis_id=self.ra_id, direction=-1),
             lx200.commands.MoveNorth: functools.partial(self.slew_axis_relative, axis_id=self.dec_id, direction=1),
@@ -100,6 +99,14 @@ class LX200Protocol(asyncio.Protocol):
             payload = self.store['mount.target.declination']
             requests.put('{}/api/devices/{}/{}/angle'.format(self.server_path, self.dec_id, action), json=payload)
 
+    def halt_axis_slew(self, axis_id, *args, **kwargs):
+        payload = {
+            'degrees': 0,
+            'minutes': 0,
+            'seconds': 0,
+        }
+        return requests.put('{}/api/devices/{}/run_speed'.format(self.server_path, axis_id), json=payload)
+
     def halt_axis(self, axis_id, *args, **kwargs):
         return requests.put('{}/api/devices/{}/halt'.format(self.server_path, axis_id))
 
@@ -131,7 +138,7 @@ class LX200Protocol(asyncio.Protocol):
         for (k,v) in payload.items():
             payload[k] = v*direction
 
-        return requests.put('{}/api/devices/{}/goto/relative/angle'.format(self.server_path, axis_id), json=payload)
+        return requests.put('{}/api/devices/{}/run_speed'.format(self.server_path, axis_id), json=payload)
 
 
 
