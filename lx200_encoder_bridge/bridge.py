@@ -276,6 +276,7 @@ def main():
 
     parser.add_argument('--store-path', type=str, required=False, default='', help='Path to load and save scope status store')
     parser.add_argument('--store-format', required=False, default='json',  choices=['json', 'yaml'], help='Output format for store, default: JSON')
+    parser.add_argument('--state-save-interval', required=False, default=1000,  type=int, help='Interval in milliseconds between state saving')
 
     parser.add_argument('--verbose', required=False, default=False, action='store_true')
 
@@ -290,8 +291,19 @@ def main():
     loop = asyncio.get_event_loop()
 
     if args.store_path:
-        atexit.register(save_store, store, args.store_path, args.store_format)
-        loop.add_signal_handler(signal.SIGHUP, functools.partial(save_store, store, args.store_path, args.store_format))
+
+        save_interval = max(args.state_save_interval, 250)
+        __save_store = functools.partial(save_store, store=store, store_path=args.store_path, format=args.store_format)
+
+        async def background_save():
+            while True:
+                __save_store()
+                await asyncio.sleep(save_interval / 1000.0)
+
+        atexit.register( __save_store)
+        loop.add_signal_handler(signal.SIGHUP, __save_store)
+
+        loop.create_task(background_save())
 
         loop.add_signal_handler(signal.SIGTERM, functools.partial(sys.exit, 0))
         loop.add_signal_handler(signal.SIGINT, functools.partial(sys.exit, 0))
