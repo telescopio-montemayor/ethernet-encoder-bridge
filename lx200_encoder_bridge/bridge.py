@@ -19,7 +19,7 @@ import yaml
 
 import lx200.store
 
-from .protocols import LX200Protocol
+from .protocols import LX200Protocol, StellariumProtocol
 
 
 logger = logging.getLogger('lx200-bridge')
@@ -27,9 +27,9 @@ logger = logging.getLogger('lx200-bridge')
 store = lx200.store.Store()
 
 
-def build_lx200_protocol_factory(store, server, ra_id, dec_id, *args, **kwargs):
+def build_protocol_factory(protocol, store, server, ra_id, dec_id, *args, **kwargs):
     def __inner(*args, **kwargs):
-        return LX200Protocol(store, server, ra_id, dec_id, *args, **kwargs)
+        return protocol(store, server, ra_id, dec_id, *args, **kwargs)
     return __inner
 
 
@@ -115,9 +115,13 @@ class WSUpdater:
 async def run(args):
 
     loop = asyncio.get_running_loop()
-    lx200_factory = build_lx200_protocol_factory(store, args.encoder_server, args.ra_axis_id, args.dec_axis_id)
 
-    server = await loop.create_server(lx200_factory, args.host, args.port)
+    lx200_factory = build_protocol_factory(LX200Protocol, store, args.encoder_server, args.ra_axis_id, args.dec_axis_id)
+    stellarium_factory = build_protocol_factory(StellariumProtocol, store, args.encoder_server, args.ra_axis_id, args.dec_axis_id)
+
+    lx200_server = await loop.create_server(lx200_factory, args.host, args.port)
+    stellarium_server = await loop.create_server(stellarium_factory, args.host, args.stellarium_port)
+
     store_server = ScopeStoreServer(args.host, args.web_port, store)
     await store_server.start()
 
@@ -125,7 +129,11 @@ async def run(args):
     await(wsupdater.start())
 
     logger.info('LX200 <-> Ethernet Encoder Bridge')
-    logger.info('Serving on {}'.format(server.sockets[0].getsockname()))
+    logger.info('Serving on {}'.format(lx200_server.sockets[0].getsockname()))
+
+    logger.info('Stellarium <-> Ethernet Encoder Bridge')
+    logger.info('Serving on {}'.format(stellarium_server.sockets[0].getsockname()))
+
     logger.info('Serving state on http://{}:{}'.format(args.host, args.web_port))
 
 
@@ -163,6 +171,7 @@ def main():
     parser.add_argument('--dec-axis-id', required=False, default='DEC', help='Id of axis to map to Declination')
 
     parser.add_argument('--port', type=int, required=False, default=7634)
+    parser.add_argument('--stellarium-port', type=int, required=False, default=10001)
     parser.add_argument('--web-port', type=int, required=False, default=8081)
     parser.add_argument('--host', type=str, required=False, default='127.0.0.1')
 
