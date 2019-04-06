@@ -22,7 +22,7 @@ import lx200.store
 from .protocols import LX200Protocol, StellariumProtocol
 
 
-logger = logging.getLogger('lx200-bridge')
+logger = logging.getLogger('ethernet-encoder-bridge')
 
 store = lx200.store.Store()
 
@@ -164,7 +164,7 @@ def load_store(store, store_path, format='json'):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Bridge between ethernet-encoder-servo and LX200 protocol')
+    parser = argparse.ArgumentParser(description='Bridge between ethernet-encoder-servo and LX200/Stellarium protocol')
 
     parser.add_argument('--encoder-server', required=False, default='http://localhost:5000', help='ethernet encoder server url')
     parser.add_argument('--ra-axis-id', required=False, default='RA', help='Id of axis to map to Right Ascencion')

@@ -8,7 +8,7 @@ import lx200.parser
 import lx200.commands
 import lx200.responses
 
-logger = logging.getLogger('lx200-bridge')
+logger = logging.getLogger('ethernet-encoder-bridge.lx200')
 
 
 class LX200Protocol(asyncio.Protocol):

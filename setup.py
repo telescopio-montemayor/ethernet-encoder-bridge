@@ -1,7 +1,7 @@
 import os
 from setuptools import find_packages, setup
 
-from lx200_encoder_bridge import __version__
+from ethernet_encoder_bridge import __version__
 
 
 with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8') as readme:
@@ -10,7 +10,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.md'), encoding='utf-8'
 os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
-    name='lx200-encoder-bridge',
+    name='ethernet-encoder-bridge',
     version=__version__,
     packages=find_packages(),
     include_package_data=True,
@@ -26,15 +26,15 @@ setup(
         'git+https://github.com/telescopio-montemayor/python-lx200'
     ],
     license='AGPL-3.0',
-    description='Small utility to translate lx200 commands into calls to https://github.com/telescopio-montemayor/ethernet-encoder-servo',
+    description='Small utility to translate lx200 and Stellarium commands into calls to https://github.com/telescopio-montemayor/ethernet-encoder-servo',
     long_description=README,
     long_description_content_type='text/markdown',
-    url='https://github.com/telescopio-montemayor/lx200-encoder-bridge',
+    url='https://github.com/telescopio-montemayor/ethernet-encoder-bridge',
     author='Adrián Pardini',
     author_email='github@tangopardo.com.ar',
     entry_points={
         'console_scripts': [
-            'lx200-bridge=lx200_encoder_bridge.bridge:main'
+            'ethernet-encoder-bridge=ethernet_encoder_bridge.bridge:main'
         ]
     },
     classifiers=[
@@ -52,5 +52,5 @@ setup(
         'Topic :: Education',
         'Topic :: Scientific/Engineering :: Astronomy'
     ],
-    keywords='astronomy, telescope, lx200, encoder',
+    keywords='astronomy, telescope, lx200, encoder, stellarium',
 )

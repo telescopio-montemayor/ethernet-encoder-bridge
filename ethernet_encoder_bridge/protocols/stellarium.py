@@ -11,7 +11,7 @@ import logging
 
 import lx200.commands
 
-logger = logging.getLogger('lx200-bridge.stellarium')
+logger = logging.getLogger('ethernet-encoder-bridge.stellarium')
 
 
 def decimal_to_dms(angle):
