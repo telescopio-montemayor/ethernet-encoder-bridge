@@ -166,18 +166,18 @@ def load_store(store, store_path, format='json'):
 def main():
     parser = argparse.ArgumentParser(description='Bridge between ethernet-encoder-servo and LX200/Stellarium protocol')
 
-    parser.add_argument('--encoder-server', required=False, default='http://localhost:5000', help='ethernet encoder server url')
-    parser.add_argument('--ra-axis-id', required=False, default='RA', help='Id of axis to map to Right Ascencion')
-    parser.add_argument('--dec-axis-id', required=False, default='DEC', help='Id of axis to map to Declination')
+    parser.add_argument('--encoder-server', required=False, default='http://localhost:5000', help='ethernet encoder server url (%(default)s)')
+    parser.add_argument('--ra-axis-id', required=False, default='RA', help='Id of axis to map to Right Ascencion (%(default)s)')
+    parser.add_argument('--dec-axis-id', required=False, default='DEC', help='Id of axis to map to Declination (%(default)s)')
 
-    parser.add_argument('--port', type=int, required=False, default=7634)
-    parser.add_argument('--stellarium-port', type=int, required=False, default=10001)
-    parser.add_argument('--web-port', type=int, required=False, default=8081)
-    parser.add_argument('--host', type=str, required=False, default='127.0.0.1')
+    parser.add_argument('--port', type=int, required=False, default=7634, help='TCP port for the LX200 server (%(default)s)')
+    parser.add_argument('--stellarium-port', type=int, required=False, default=10001, help='TCP port for the Stellarium server (%(default)s)')
+    parser.add_argument('--web-port', type=int, required=False, default=8081, help='TCP port for the status server (%(default)s)')
+    parser.add_argument('--host', type=str, required=False, default='127.0.0.1', help='Host for all the servers (%(default)s)')
 
     parser.add_argument('--store-path', type=str, required=False, default='', help='Path to load and save scope status store')
     parser.add_argument('--store-format', required=False, default='json',  choices=['json', 'yaml'], help='Output format for store, default: JSON')
-    parser.add_argument('--state-save-interval', required=False, default=1000,  type=int, help='Interval in milliseconds between state saving')
+    parser.add_argument('--state-save-interval', required=False, default=1000,  type=int, help='Interval in milliseconds between state saving (%(default)s)')
 
     parser.add_argument('--verbose', required=False, default=False, action='store_true')
 
@@ -201,7 +201,7 @@ def main():
                 __save_store()
                 await asyncio.sleep(save_interval / 1000.0)
 
-        atexit.register( __save_store)
+        atexit.register(__save_store)
         loop.add_signal_handler(signal.SIGHUP, __save_store)
 
         loop.create_task(background_save())
